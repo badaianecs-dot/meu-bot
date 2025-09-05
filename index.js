@@ -50,7 +50,7 @@ const commands = [
     )
     .addStringOption((opt) =>
       opt
-        .setName("descricao2") // nova caixa opcional
+        .setName("descricao2")
         .setDescription("Descrição adicional (opcional)")
         .setRequired(false)
     )
@@ -120,13 +120,13 @@ client.once("ready", async () => {
 client.on("interactionCreate", async (interaction) => {
   try {
     if (!interaction.isChatInputCommand()) return;
+
     const commandName = interaction.commandName;
     const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
 
     // ---------------- AVISO ----------------
     if (commandName === "aviso") {
-      await interaction.deferReply({ ephemeral: true }); // evita não responder
-
+      await interaction.deferReply({ ephemeral: true });
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao");
       const descricao2 = interaction.options.getString("descricao2");
@@ -144,7 +144,84 @@ client.on("interactionCreate", async (interaction) => {
       return;
     }
 
-    // (Aqui você pode manter todos os outros comandos como já estavam)
+    // ---------------- EVENTO ----------------
+    if (commandName === "evento") {
+      await interaction.deferReply({ ephemeral: true });
+      const titulo = interaction.options.getString("titulo");
+      const descricao = interaction.options.getString("descricao");
+      const data = interaction.options.getString("data");
+      const horario = interaction.options.getString("horario");
+      const local = interaction.options.getString("local");
+      const premiacao = interaction.options.getString("premiacao");
+      const observacao = interaction.options.getString("observacao");
+      const imagem = interaction.options.getAttachment("imagem")?.url || null;
+
+      let descEmbed = `📌 ${descricao}\n\n📅 Data: ${data}\n⏰ Horário: ${horario}\n📍 Local: ${local}\n🏆 Premiação: ${premiacao}`;
+      if (observacao) descEmbed += `\n\n⚠️ Observação: ${observacao}`;
+
+      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
+      if (imagem) embed.setImage(imagem);
+
+      await interaction.channel.send({ embeds: [embed] });
+      await interaction.editReply({ content: "✅ Evento criado!" });
+      return;
+    }
+
+    // ---------------- ATUALIZAÇÕES ----------------
+    if (commandName === "atualizacoes") {
+      await interaction.deferReply({ ephemeral: true });
+      let descEmbed = "";
+      for (let i = 1; i <= 10; i++) {
+        const texto = interaction.options.getString(`texto${i}`);
+        if (texto) descEmbed += `• ${texto}\n`;
+      }
+      const imagem = interaction.options.getAttachment("imagem")?.url || null;
+      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle("📰 Atualizações").setDescription(descEmbed);
+      if (imagem) embed.setImage(imagem);
+
+      await interaction.channel.send({ embeds: [embed] });
+      await interaction.editReply({ content: "✅ Atualizações enviadas!" });
+      return;
+    }
+
+    // ---------------- PIX ----------------
+    if (commandName === "pix") {
+      await interaction.deferReply({ ephemeral: true });
+      const valor = interaction.options.getString("valor");
+      const produto = interaction.options.getString("produto");
+      const desconto = interaction.options.getString("desconto") || "0";
+
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("💰 PIX Gabriel")
+        .setDescription(`Produto: ${produto}\nValor: ${valor}\nDesconto: ${desconto}%`);
+
+      await interaction.editReply({ embeds: [embed] });
+      return;
+    }
+
+    // ---------------- PIX2 ----------------
+    if (commandName === "pix2") {
+      await interaction.deferReply({ ephemeral: true });
+      const valor = interaction.options.getString("valor");
+      const servico = interaction.options.getString("servico");
+      const desconto = interaction.options.getString("desconto") || "0";
+
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("💰 PIX Leandro")
+        .setDescription(`Serviço: ${servico}\nValor: ${valor}\nDesconto: ${desconto}%`);
+
+      await interaction.editReply({ embeds: [embed] });
+      return;
+    }
+
+    // ---------------- CARGO STREAMER ----------------
+    if (commandName === "cargostreamer") {
+      await interaction.deferReply({ ephemeral: true });
+      await interaction.editReply(`🎮 Para pegar o cargo Streamer, reaja na mensagem que aparecer!`);
+      return;
+    }
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
     if (!interaction.replied && !interaction.deferred)
