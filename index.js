@@ -43,16 +43,21 @@ const commands = [
       opt.setName("titulo").setDescription("Título do aviso").setRequired(true)
     )
     .addStringOption((opt) =>
-      opt.setName("descricao").setDescription("Descrição do aviso").setRequired(true)
+      opt
+        .setName("descricao")
+        .setDescription("Descrição do aviso")
+        .setRequired(true)
     )
     .addStringOption((opt) =>
-      opt.setName("descricaoExtra").setDescription("Descrição extra (opcional)").setRequired(false)
+      opt
+        .setName("descricao2") // nova caixa opcional
+        .setDescription("Descrição adicional (opcional)")
+        .setRequired(false)
     )
     .addAttachmentOption((opt) =>
       opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
     ),
 
-  // ---------------- OUTROS COMANDOS ----------------
   new SlashCommandBuilder()
     .setName("evento")
     .setDescription("📅 Criar um evento")
@@ -80,9 +85,7 @@ const commands = [
     .addStringOption((opt) => opt.setName("texto10").setDescription("Atualização 10").setRequired(false))
     .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
 
-  new SlashCommandBuilder()
-    .setName("cargostreamer")
-    .setDescription("Mensagem para pegar o cargo Streamer"),
+  new SlashCommandBuilder().setName("cargostreamer").setDescription("Mensagem para pegar o cargo Streamer"),
 
   new SlashCommandBuilder()
     .setName("pix")
@@ -104,7 +107,9 @@ client.once("ready", async () => {
   console.log(`🤖 Bot online como ${client.user.tag}`);
   const rest = new REST({ version: "10" }).setToken(TOKEN);
   try {
-    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
+    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
+      body: commands,
+    });
     console.log("✅ Comandos registrados!");
   } catch (err) {
     console.error("❌ Erro ao registrar comandos:", err);
@@ -118,43 +123,32 @@ client.on("interactionCreate", async (interaction) => {
     const commandName = interaction.commandName;
     const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
 
-    // ---------------- COMANDO /AVISO ----------------
+    // ---------------- AVISO ----------------
     if (commandName === "aviso") {
+      await interaction.deferReply({ ephemeral: true }); // evita não responder
+
       const titulo = interaction.options.getString("titulo");
-      const descricao1 = interaction.options.getString("descricao");
-      const descricao2 = interaction.options.getString("descricaoExtra");
+      const descricao = interaction.options.getString("descricao");
+      const descricao2 = interaction.options.getString("descricao2");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      let descEmbed = `
-──────────────
-**Título:** ${titulo}
-──────────────
-**Descrição:** ${descricao1}
-──────────────
-**Descrição extra:** ${descricao2 || "Nenhuma"}
-──────────────
-`;
+      let descEmbed = descricao;
+      if (descricao2) descEmbed += `\n\n${descricao2}`;
 
-      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setDescription(descEmbed);
+      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
       if (imagem) embed.setImage(imagem);
 
-      // Resposta ephemer adiantada
-      await interaction.deferReply({ ephemeral: true });
-
-      // Envia embed e menção
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-
-      // Atualiza a interação ephemer
       await interaction.editReply({ content: "✅ Aviso enviado!" });
+      return;
     }
 
-    // ---------------- OUTROS COMANDOS ----------------
-    // Cole aqui a lógica de /evento, /atualizacoes, /pix, /pix2, /cargostreamer
-    // Sem alterações
+    // (Aqui você pode manter todos os outros comandos como já estavam)
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
-    if (!interaction.replied) interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
+    if (!interaction.replied && !interaction.deferred)
+      interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
   }
 });
 
@@ -178,7 +172,9 @@ client.on("messageReactionAdd", async (reaction, user) => {
 const app = express();
 app.get("/", (req, res) => res.send("Bot está rodando e acordado! ✅"));
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("🌐 Servidor web ativo para manter o Replit acordado!"));
+app.listen(PORT, () =>
+  console.log("🌐 Servidor web ativo para manter o Render/Replit acordado!")
+);
 
 // ---------------- LOGIN ----------------
 client.login(TOKEN);
