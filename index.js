@@ -46,7 +46,10 @@ const commands = [
       opt.setName("descricao").setDescription("Descrição do aviso").setRequired(true)
     )
     .addStringOption((opt) =>
-      opt.setName("descricao2").setDescription("Descrição adicional (opcional)").setRequired(false)
+      opt
+        .setName("descricao2")
+        .setDescription("Descrição adicional (opcional)")
+        .setRequired(false)
     )
     .addAttachmentOption((opt) =>
       opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
@@ -101,9 +104,7 @@ client.once("ready", async () => {
   console.log(`🤖 Bot online como ${client.user.tag}`);
   const rest = new REST({ version: "10" }).setToken(TOKEN);
   try {
-    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
-      body: commands,
-    });
+    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
     console.log("✅ Comandos registrados!");
   } catch (err) {
     console.error("❌ Erro ao registrar comandos:", err);
@@ -114,14 +115,13 @@ client.once("ready", async () => {
 client.on("interactionCreate", async (interaction) => {
   try {
     if (!interaction.isChatInputCommand()) return;
-
     const commandName = interaction.commandName;
     const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
 
+    await interaction.deferReply({ ephemeral: true });
+
     // ---------------- AVISO ----------------
     if (commandName === "aviso") {
-      await interaction.deferReply({ ephemeral: true });
-
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao");
       const descricao2 = interaction.options.getString("descricao2");
@@ -135,14 +135,12 @@ client.on("interactionCreate", async (interaction) => {
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-      await interaction.editReply({ content: "✅ Aviso enviado!" });
-      return;
+
+      return interaction.editReply({ content: "✅ Aviso enviado!" });
     }
 
     // ---------------- EVENTO ----------------
     if (commandName === "evento") {
-      await interaction.deferReply({ ephemeral: true });
-
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao");
       const data = interaction.options.getString("data");
@@ -159,14 +157,11 @@ client.on("interactionCreate", async (interaction) => {
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
-      await interaction.editReply({ content: "✅ Evento criado!" });
-      return;
+      return interaction.editReply({ content: "✅ Evento criado!" });
     }
 
     // ---------------- ATUALIZAÇÕES ----------------
     if (commandName === "atualizacoes") {
-      await interaction.deferReply({ ephemeral: true });
-
       let descEmbed = "";
       for (let i = 1; i <= 10; i++) {
         const texto = interaction.options.getString(`texto${i}`);
@@ -178,55 +173,50 @@ client.on("interactionCreate", async (interaction) => {
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
-      await interaction.editReply({ content: "✅ Atualizações enviadas!" });
-      return;
+      return interaction.editReply({ content: "✅ Atualizações enviadas!" });
     }
 
     // ---------------- PIX ----------------
     if (commandName === "pix") {
-      await interaction.deferReply({ ephemeral: true });
-
       const valor = interaction.options.getString("valor");
       const produto = interaction.options.getString("produto");
       const desconto = interaction.options.getString("desconto") || "0";
 
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
-        .setTitle("💰 PIX Gabriel")
-        .setDescription(`Produto: ${produto}\nValor: ${valor}\nDesconto: ${desconto}%`);
+        .setTitle("💰 PIX Gabriel (STAFF)")
+        .setDescription(`**Produto:** ${produto}\n**Valor:** ${valor}\n**Desconto:** ${desconto}%`);
 
-      await interaction.editReply({ embeds: [embed] });
-      return;
+      return interaction.editReply({ embeds: [embed] });
     }
 
     // ---------------- PIX2 ----------------
     if (commandName === "pix2") {
-      await interaction.deferReply({ ephemeral: true });
-
       const valor = interaction.options.getString("valor");
       const servico = interaction.options.getString("servico");
       const desconto = interaction.options.getString("desconto") || "0";
 
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
-        .setTitle("💰 PIX Leandro")
-        .setDescription(`Serviço: ${servico}\nValor: ${valor}\nDesconto: ${desconto}%`);
+        .setTitle("💰 PIX Leandro (STAFF)")
+        .setDescription(`**Serviço:** ${servico}\n**Valor:** ${valor}\n**Desconto:** ${desconto}%`);
 
-      await interaction.editReply({ embeds: [embed] });
-      return;
+      return interaction.editReply({ embeds: [embed] });
     }
 
     // ---------------- CARGO STREAMER ----------------
     if (commandName === "cargostreamer") {
-      await interaction.deferReply({ ephemeral: true });
-      await interaction.editReply(`🎮 Para pegar o cargo Streamer, reaja na mensagem que aparecer!`);
-      return;
+      return interaction.editReply("🎮 Para pegar o cargo Streamer, reaja na mensagem que aparecer!");
     }
 
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
-    if (!interaction.replied && !interaction.deferred)
-      interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
+
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
+    } else if (interaction.deferred) {
+      await interaction.editReply({ content: "❌ Ocorreu um erro." });
+    }
   }
 });
 
@@ -250,9 +240,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
 const app = express();
 app.get("/", (req, res) => res.send("Bot está rodando e acordado! ✅"));
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () =>
-  console.log("🌐 Servidor web ativo para manter o Render/Replit acordado!")
-);
+app.listen(PORT, () => console.log("🌐 Servidor web ativo para manter o Render/Replit acordado!"));
 
 // ---------------- LOGIN ----------------
 client.login(TOKEN);
