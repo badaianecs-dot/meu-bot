@@ -113,11 +113,12 @@ client.once("ready", async () => {
 
 // ---------------- INTERAÇÕES ----------------
 client.on("interactionCreate", async (interaction) => {
-  try {
-    if (!interaction.isChatInputCommand()) return;
-    const commandName = interaction.commandName;
-    const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
+  if (!interaction.isChatInputCommand()) return;
 
+  const commandName = interaction.commandName;
+  const temPermissao = STAFF_ROLES.some((r) => interaction.member.roles.cache.has(r));
+
+  try {
     await interaction.deferReply({ ephemeral: true });
 
     // ---------------- AVISO ----------------
@@ -139,44 +140,7 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.editReply({ content: "✅ Aviso enviado!" });
     }
 
-    // ---------------- EVENTO ----------------
-    if (commandName === "evento") {
-      const titulo = interaction.options.getString("titulo");
-      const descricao = interaction.options.getString("descricao");
-      const data = interaction.options.getString("data");
-      const horario = interaction.options.getString("horario");
-      const local = interaction.options.getString("local");
-      const premiacao = interaction.options.getString("premiacao");
-      const observacao = interaction.options.getString("observacao");
-      const imagem = interaction.options.getAttachment("imagem")?.url || null;
-
-      let descEmbed = `📌 ${descricao}\n\n📅 Data: ${data}\n⏰ Horário: ${horario}\n📍 Local: ${local}\n🏆 Premiação: ${premiacao}`;
-      if (observacao) descEmbed += `\n\n⚠️ Observação: ${observacao}`;
-
-      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
-      if (imagem) embed.setImage(imagem);
-
-      await interaction.channel.send({ embeds: [embed] });
-      return interaction.editReply({ content: "✅ Evento criado!" });
-    }
-
-    // ---------------- ATUALIZAÇÕES ----------------
-    if (commandName === "atualizacoes") {
-      let descEmbed = "";
-      for (let i = 1; i <= 10; i++) {
-        const texto = interaction.options.getString(`texto${i}`);
-        if (texto) descEmbed += `• ${texto}\n`;
-      }
-
-      const imagem = interaction.options.getAttachment("imagem")?.url || null;
-      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle("📰 Atualizações").setDescription(descEmbed);
-      if (imagem) embed.setImage(imagem);
-
-      await interaction.channel.send({ embeds: [embed] });
-      return interaction.editReply({ content: "✅ Atualizações enviadas!" });
-    }
-
-    // ---------------- PIX ----------------
+    // ---------------- PIX COM EMOJIS PERSONALIZADOS ----------------
     if (commandName === "pix") {
       const valor = interaction.options.getString("valor");
       const produto = interaction.options.getString("produto");
@@ -185,12 +149,12 @@ client.on("interactionCreate", async (interaction) => {
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
         .setTitle("💰 PIX Gabriel (STAFF)")
-        .setDescription(`**Produto:** ${produto}\n**Valor:** ${valor}\n**Desconto:** ${desconto}%`);
+        .setDescription(`<:Seta:1363518970375962910> **Produto:** ${produto}\n<:Seta:1363518970375962910> **Valor:** ${valor}\n<:Seta:1363518970375962910> **Desconto:** ${desconto}%`);
 
-      return interaction.editReply({ embeds: [embed] });
+      await interaction.channel.send({ embeds: [embed] });
+      return interaction.editReply({ content: "✅ PIX enviado!" });
     }
 
-    // ---------------- PIX2 ----------------
     if (commandName === "pix2") {
       const valor = interaction.options.getString("valor");
       const servico = interaction.options.getString("servico");
@@ -199,23 +163,24 @@ client.on("interactionCreate", async (interaction) => {
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
         .setTitle("💰 PIX Leandro (STAFF)")
-        .setDescription(`**Serviço:** ${servico}\n**Valor:** ${valor}\n**Desconto:** ${desconto}%`);
+        .setDescription(`<:Seta:1363518970375962910> **Serviço:** ${servico}\n<:Seta:1363518970375962910> **Valor:** ${valor}\n<:Seta:1363518970375962910> **Desconto:** ${desconto}%`);
 
-      return interaction.editReply({ embeds: [embed] });
+      await interaction.channel.send({ embeds: [embed] });
+      return interaction.editReply({ content: "✅ PIX enviado!" });
     }
 
     // ---------------- CARGO STREAMER ----------------
     if (commandName === "cargostreamer") {
-      return interaction.editReply("🎮 Para pegar o cargo Streamer, reaja na mensagem que aparecer!");
+      await interaction.channel.send(`Clique na reação para pegar o cargo <@&${STREAMER_ROLE}>`);
+      return interaction.editReply({ content: "✅ Mensagem enviada!" });
     }
 
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
-
     if (!interaction.replied && !interaction.deferred) {
       await interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
     } else if (interaction.deferred) {
-      await interaction.editReply({ content: "❌ Ocorreu um erro." });
+      await interaction.editReply({ content: "❌ Ocorreu um erro." }).catch(() => {});
     }
   }
 });
@@ -240,7 +205,7 @@ client.on("messageReactionAdd", async (reaction, user) => {
 const app = express();
 app.get("/", (req, res) => res.send("Bot está rodando e acordado! ✅"));
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("🌐 Servidor web ativo para manter o Render/Replit acordado!"));
+app.listen(PORT, () => console.log("🌐 Servidor web ativo!"));
 
 // ---------------- LOGIN ----------------
 client.login(TOKEN);
