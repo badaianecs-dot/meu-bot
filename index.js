@@ -5,7 +5,7 @@ const {
   SlashCommandBuilder,
   REST,
   Routes,
-  InteractionResponseFlags,
+  InteractionResponseFlags
 } = require("discord.js");
 require("dotenv").config();
 const express = require("express");
@@ -45,6 +45,12 @@ const commands = [
     )
     .addStringOption((opt) =>
       opt.setName("descricao").setDescription("Descrição do aviso").setRequired(true)
+    )
+    .addStringOption((opt) =>
+      opt
+        .setName("descricao_extra")
+        .setDescription("Descrição adicional (opcional)")
+        .setRequired(false)
     )
     .addAttachmentOption((opt) =>
       opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
@@ -171,9 +177,16 @@ client.on("interactionCreate", async (interaction) => {
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao");
+      const descricaoExtra = interaction.options.getString("descricao_extra");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descricao);
+      let embedDesc = descricao;
+      if (descricaoExtra) embedDesc += `\n\n${descricaoExtra}`;
+
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle(titulo)
+        .setDescription(embedDesc);
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
@@ -195,7 +208,10 @@ client.on("interactionCreate", async (interaction) => {
       let descEmbed = `**Descrição:** ${descricao}\n\n**Data:** ${data}\n\n**Horário:** ${horario}\n\n**Local:** ${local}\n\n**Premiação:** ${premiacao}`;
       if (observacao) descEmbed += `\n\n**Observação:** ${observacao}`;
 
-      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle(titulo)
+        .setDescription(descEmbed);
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
@@ -227,7 +243,8 @@ client.on("interactionCreate", async (interaction) => {
 
     // ---------------- PIX ----------------
     if (commandName === "pix" || commandName === "pix2") {
-      if (!temPermissao) return interaction.reply({ content: "❌ Apenas STAFF.", flags: InteractionResponseFlags.Ephemeral });
+      if (!temPermissao)
+        return interaction.reply({ content: "❌ Apenas STAFF.", flags: InteractionResponseFlags.Ephemeral });
 
       const valor = interaction.options.getString("valor");
       const item = commandName === "pix" ? interaction.options.getString("produto") : interaction.options.getString("servico");
@@ -243,7 +260,6 @@ client.on("interactionCreate", async (interaction) => {
       if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
       const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
-
       await interaction.channel.send({ embeds: [embed] });
       return interaction.reply({ content: "✅ PIX enviado com sucesso!", flags: InteractionResponseFlags.Ephemeral });
     }
