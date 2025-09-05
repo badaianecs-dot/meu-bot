@@ -43,16 +43,10 @@ const commands = [
       opt.setName("titulo").setDescription("Título do aviso").setRequired(true)
     )
     .addStringOption((opt) =>
-      opt
-        .setName("descricao")
-        .setDescription("Descrição do aviso")
-        .setRequired(true)
+      opt.setName("descricao").setDescription("Descrição do aviso").setRequired(true)
     )
     .addStringOption((opt) =>
-      opt
-        .setName("descricao2")
-        .setDescription("Descrição adicional (opcional)")
-        .setRequired(false)
+      opt.setName("descricao2").setDescription("Descrição adicional (opcional)").setRequired(false)
     )
     .addAttachmentOption((opt) =>
       opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)
@@ -127,6 +121,7 @@ client.on("interactionCreate", async (interaction) => {
     // ---------------- AVISO ----------------
     if (commandName === "aviso") {
       await interaction.deferReply({ ephemeral: true });
+
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao");
       const descricao2 = interaction.options.getString("descricao2");
@@ -147,6 +142,7 @@ client.on("interactionCreate", async (interaction) => {
     // ---------------- EVENTO ----------------
     if (commandName === "evento") {
       await interaction.deferReply({ ephemeral: true });
+
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao");
       const data = interaction.options.getString("data");
@@ -170,11 +166,13 @@ client.on("interactionCreate", async (interaction) => {
     // ---------------- ATUALIZAÇÕES ----------------
     if (commandName === "atualizacoes") {
       await interaction.deferReply({ ephemeral: true });
+
       let descEmbed = "";
       for (let i = 1; i <= 10; i++) {
         const texto = interaction.options.getString(`texto${i}`);
         if (texto) descEmbed += `• ${texto}\n`;
       }
+
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle("📰 Atualizações").setDescription(descEmbed);
       if (imagem) embed.setImage(imagem);
@@ -187,6 +185,7 @@ client.on("interactionCreate", async (interaction) => {
     // ---------------- PIX ----------------
     if (commandName === "pix") {
       await interaction.deferReply({ ephemeral: true });
+
       const valor = interaction.options.getString("valor");
       const produto = interaction.options.getString("produto");
       const desconto = interaction.options.getString("desconto") || "0";
@@ -203,6 +202,7 @@ client.on("interactionCreate", async (interaction) => {
     // ---------------- PIX2 ----------------
     if (commandName === "pix2") {
       await interaction.deferReply({ ephemeral: true });
+
       const valor = interaction.options.getString("valor");
       const servico = interaction.options.getString("servico");
       const desconto = interaction.options.getString("desconto") || "0";
@@ -222,6 +222,7 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.editReply(`🎮 Para pegar o cargo Streamer, reaja na mensagem que aparecer!`);
       return;
     }
+
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
     if (!interaction.replied && !interaction.deferred)
