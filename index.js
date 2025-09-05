@@ -187,20 +187,13 @@ client.once("ready", async () => {
   const rest = new REST({ version: "10" }).setToken(TOKEN);
 
   try {
-    // Remove todos os comandos globais
     await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
     console.log("✅ Comandos globais antigos removidos");
 
-    // Remove todos os comandos da guilda
-    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
-      body: [],
-    });
+    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] });
     console.log("✅ Comandos da guilda antigos removidos");
 
-    // Registra apenas os comandos atuais
-    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
-      body: commands,
-    });
+    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
     console.log("✅ Comandos atualizados e registrados!");
   } catch (err) {
     console.error("❌ Erro ao registrar comandos:", err);
@@ -216,6 +209,11 @@ client.on("interactionCreate", async (interaction) => {
       interaction.member.roles.cache.has(r),
     );
 
+    // Marca interação como respondida
+    if (!interaction.deferred && !interaction.replied) {
+      await interaction.deferReply({ ephemeral: true });
+    }
+
     // ------------- /aviso -------------
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
@@ -229,13 +227,9 @@ client.on("interactionCreate", async (interaction) => {
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({
-        content: `<@&${CIDADAO_ROLE}> @everyone`,
-      });
-      return interaction.reply({
-        ephemeral: true,
-        content: "✅ Aviso enviado!",
-      });
+      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+
+      return interaction.editReply({ content: "✅ Aviso enviado!" });
     }
 
     // ------------- /evento -------------
@@ -259,10 +253,7 @@ client.on("interactionCreate", async (interaction) => {
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
-      return interaction.reply({
-        ephemeral: true,
-        content: "✅ Evento enviado!",
-      });
+      return interaction.editReply({ content: "✅ Evento enviado!" });
     }
 
     // ------------- /atualizacoes -------------
@@ -275,10 +266,7 @@ client.on("interactionCreate", async (interaction) => {
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
       if (textos.length === 0)
-        return interaction.reply({
-          content: "❌ Informe pelo menos uma atualização.",
-          ephemeral: true,
-        });
+        return interaction.editReply({ content: "❌ Informe pelo menos uma atualização." });
 
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
@@ -287,22 +275,15 @@ client.on("interactionCreate", async (interaction) => {
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({
-        content: `<@&${CIDADAO_ROLE}> @everyone`,
-      });
-      return interaction.reply({
-        ephemeral: true,
-        content: "✅ Atualizações enviadas!",
-      });
+      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+
+      return interaction.editReply({ content: "✅ Atualizações enviadas!" });
     }
 
     // ------------- /pix e /pix2 -------------
     if (commandName === "pix" || commandName === "pix2") {
       if (!temPermissao)
-        return interaction.reply({
-          content: "❌ Apenas STAFF.",
-          ephemeral: true,
-        });
+        return interaction.editReply({ content: "❌ Apenas STAFF." });
 
       const valor = interaction.options.getString("valor");
       const item =
@@ -316,18 +297,18 @@ client.on("interactionCreate", async (interaction) => {
           ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
           : "leandro.hevieira@gmail.com"
       }\n\n`;
-      descricao += `<:seta:1346148222044995714> **VALOR:** ${valor}\u2003\u2003\u2003**${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n`;
+      descricao += `<:seta:1346148222044995714> **VALOR:** ${valor}\u2003\u2003\u2003**${
+        commandName === "pix" ? "Produto" : "Serviço"
+      }:** ${item}\n\n`;
       descricao += "**Enviar o comprovante após o pagamento.**\n";
       if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
       const embed = new EmbedBuilder()
         .setColor("#00FF00")
         .setDescription(descricao);
+
       await interaction.channel.send({ embeds: [embed] });
-      return interaction.reply({
-        ephemeral: true,
-        content: "✅ PIX enviado com sucesso!",
-      });
+      return interaction.editReply({ content: "✅ PIX enviado com sucesso!" });
     }
 
     // ------------- /cargostreamer -------------
@@ -336,19 +317,23 @@ client.on("interactionCreate", async (interaction) => {
         .setColor(COLOR_PADRAO)
         .setTitle("Seja Streamer!")
         .setDescription(
-          `Seja Streamer!\n\nApós uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`,
+          `Seja Streamer!\n\nApós uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`
         );
+
       const mensagem = await interaction.channel.send({ embeds: [embed] });
       await mensagem.react("1353492062376558674");
-      return interaction.reply({
-        ephemeral: true,
-        content: "✅ Mensagem de cargo enviada!",
-      });
+
+      return interaction.editReply({ content: "✅ Mensagem de cargo enviada!" });
     }
+
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
-    if (!interaction.replied)
-      interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
+
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
+    } else {
+      await interaction.followUp({ content: "❌ Ocorreu um erro.", ephemeral: true });
+    }
   }
 });
 
