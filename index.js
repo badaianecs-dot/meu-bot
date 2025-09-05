@@ -317,7 +317,7 @@ client.on("interactionCreate", async (interaction) => {
         .setColor(COLOR_PADRAO)
         .setTitle("Seja Streamer!")
         .setDescription(
-          `Seja Streamer!\n\nApós uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`
+          `Após uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`
         );
 
       const mensagem = await interaction.channel.send({ embeds: [embed] });
