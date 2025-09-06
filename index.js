@@ -239,7 +239,7 @@ client.on("interactionCreate", async (interaction) => {
       const data = interaction.options.getString("data");
       const horario = interaction.options.getString("horario");
       const local = interaction.options.getString("local");
-      const premiacao = interaction.options.getString("premiacao"); // agora opcional
+      const premiacao = interaction.options.getString("premiacao"); // opcional
       const observacao = interaction.options.getString("observacao");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
@@ -254,6 +254,8 @@ client.on("interactionCreate", async (interaction) => {
       if (imagem) embed.setImage(imagem);
 
       await interaction.channel.send({ embeds: [embed] });
+      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+
       return interaction.editReply({ content: "✅ Evento enviado!" });
     }
 
