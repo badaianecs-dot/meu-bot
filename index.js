@@ -5,6 +5,9 @@ const {
   SlashCommandBuilder,
   REST,
   Routes,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } = require("discord.js");
 require("dotenv").config();
 const express = require("express");
@@ -66,7 +69,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("atualizacoes")
-    .setDescription("Enviar atualizações")
+    .setDescription("📰 Enviar atualizações")
     .addStringOption((opt) => opt.setName("texto1").setDescription("Atualização 1").setRequired(true))
     .addStringOption((opt) => opt.setName("texto2").setDescription("Atualização 2").setRequired(false))
     .addStringOption((opt) => opt.setName("texto3").setDescription("Atualização 3").setRequired(false))
@@ -79,7 +82,9 @@ const commands = [
     .addStringOption((opt) => opt.setName("texto10").setDescription("Atualização 10").setRequired(false))
     .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
 
-  new SlashCommandBuilder().setName("cargostreamer").setDescription("Mensagem para pegar o cargo Streamer"),
+  new SlashCommandBuilder()
+    .setName("cargostreamer")
+    .setDescription("Mensagem para pegar o cargo Streamer"),
 
   new SlashCommandBuilder()
     .setName("pix")
@@ -95,7 +100,9 @@ const commands = [
     .addStringOption((opt) => opt.setName("servico").setDescription("Serviço").setRequired(true))
     .addStringOption((opt) => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
 
-  new SlashCommandBuilder().setName("entrevista").setDescription("📌 Envia mensagem de aguarde entrevista"),
+  new SlashCommandBuilder()
+    .setName("entrevista")
+    .setDescription("📌 Envia mensagem de aguarde entrevista"),
 ].map((cmd) => cmd.toJSON());
 
 // ---------------- LIMPAR COMANDOS ANTIGOS E REGISTRAR ----------------
@@ -105,11 +112,6 @@ client.once("ready", async () => {
 
   try {
     await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
-    console.log("✅ Comandos globais antigos removidos");
-
-    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] });
-    console.log("✅ Comandos da guilda antigos removidos");
-
     await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
     console.log("✅ Comandos atualizados e registrados!");
   } catch (err) {
@@ -131,16 +133,13 @@ client.on("interactionCreate", async (interaction) => {
     // ---------------- /aviso ----------------
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
-      const descricaoRaw = interaction.options.getString("descricao");
-      const descricao = descricaoRaw.replace(/\\n/g, "\n");
+      const descricao = interaction.options.getString("descricao").replace(/\\n/g, "\n");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descricao);
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-
+      await interaction.channel.send({ embeds: [embed], content: `<@&${CIDADAO_ROLE}> @everyone` });
       return interaction.editReply({ content: "✅ Aviso enviado!" });
     }
 
@@ -155,15 +154,14 @@ client.on("interactionCreate", async (interaction) => {
       const observacao = interaction.options.getString("observacao");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      let descEmbed = `**Descrição:** ${descricao}\n\n**Data:** ${data}\n\n**Horário:** ${horario}\n\n**Local:** ${local}`;
+      let descEmbed = `**Descrição:** ${descricao}\n\n**Data:** ${data}\n**Horário:** ${horario}\n**Local:** ${local}`;
       if (premiacao) descEmbed += `\n\n**Premiação:** ${premiacao}`;
       if (observacao) descEmbed += `\n\n**Observação:** ${observacao}`;
 
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+      await interaction.channel.send({ embeds: [embed], content: `<@&${CIDADAO_ROLE}> @everyone` });
       return interaction.editReply({ content: "✅ Evento enviado!" });
     }
 
@@ -176,15 +174,12 @@ client.on("interactionCreate", async (interaction) => {
       }
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      if (textos.length === 0)
-        return interaction.editReply({ content: "❌ Informe pelo menos uma atualização." });
+      if (textos.length === 0) return interaction.editReply({ content: "❌ Informe pelo menos uma atualização." });
 
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle("ATUALIZAÇÕES").setDescription(textos.join("\n\n"));
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-
+      await interaction.channel.send({ embeds: [embed], content: `<@&${CIDADAO_ROLE}> @everyone` });
       return interaction.editReply({ content: "✅ Atualizações enviadas!" });
     }
 
@@ -200,14 +195,12 @@ client.on("interactionCreate", async (interaction) => {
         commandName === "pix"
           ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
           : "leandro.hevieira@gmail.com"
-      }\n\n`;
-      descricao += `<:seta:1346148222044995714> **VALOR:** ${valor}   **${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n`;
-      descricao += "**Enviar o comprovante após o pagamento.**\n";
+      }\n\n<:seta:1346148222044995714> **VALOR:** ${valor}  **${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n**Enviar o comprovante após o pagamento.**`;
       if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
       const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
-      await interaction.channel.send({ embeds: [embed] });
 
+      await interaction.channel.send({ embeds: [embed] });
       return interaction.editReply({ content: "✅ PIX enviado com sucesso!" });
     }
 
@@ -222,7 +215,6 @@ client.on("interactionCreate", async (interaction) => {
 
       const mensagem = await interaction.channel.send({ embeds: [embed] });
       await mensagem.react("1353492062376558674");
-
       return interaction.editReply({ content: "✅ Mensagem de cargo enviada!" });
     }
 
@@ -230,15 +222,11 @@ client.on("interactionCreate", async (interaction) => {
     if (commandName === "entrevista") {
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
-        .setTitle("Olá, visitantes!")
-        .setDescription(
-          "As entrevistas já estão disponíveis. Para participar, basta clicar no botão \"Aguarde Entrevista\" e um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte!"
-        );
+        .setTitle("Olá! Entrevista")
+        .setDescription("Aguarde, sua entrevista será iniciada em breve.");
 
-      await interaction.channel.send({ embeds: [embed] });
-      await interaction.channel.send({ content: `<@&1136131478888124526>` });
-
-      return interaction.editReply({ content: "✅ Mensagem de entrevista enviada com sucesso!" });
+      await interaction.channel.send({ embeds: [embed], content: `<@&${CIDADAO_ROLE}> @everyone` });
+      return interaction.editReply({ content: "✅ Mensagem de entrevista enviada!" });
     }
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
@@ -250,6 +238,30 @@ client.on("interactionCreate", async (interaction) => {
     }
   }
 });
+
+// ---------------- REAÇÕES ----------------
+client.on("messageReactionAdd", async (reaction, user) => {
+  try {
+    if (reaction.partial) await reaction.fetch();
+    if (reaction.message.partial) await reaction.message.fetch();
+    if (user.bot) return;
+
+    if (reaction.emoji.id === "1353492062376558674") {
+      const member = await reaction.message.guild.members.fetch(user.id);
+      await member.roles.add(STREAMER_ROLE);
+    }
+  } catch (err) {
+    console.error("Erro em messageReactionAdd:", err);
+  }
+});
+
+// ---------------- EXPRESS ----------------
+const app = express();
+app.get("/", (req, res) => res.send("Bot está rodando e acordado! ✅"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () =>
+  console.log("🌐 Servidor web ativo para manter o Replit acordado!")
+);
 
 // ---------------- LOGIN ----------------
 client.login(TOKEN);
