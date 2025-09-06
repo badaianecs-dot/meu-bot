@@ -5,6 +5,9 @@ const {
   SlashCommandBuilder,
   REST,
   Routes,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } = require("discord.js");
 require("dotenv").config();
 const express = require("express");
@@ -103,7 +106,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("atualizacoes")
-    .setDescription("📰 Enviar atualizações")
+    .setDescription("Enviar atualizações")
     .addStringOption((opt) =>
       opt.setName("texto1").setDescription("Atualização 1").setRequired(true),
     )
@@ -179,6 +182,16 @@ const commands = [
         .setDescription("Desconto (%) opcional")
         .setRequired(false),
     ),
+
+  new SlashCommandBuilder()
+    .setName("entrevista")
+    .setDescription("📌 Envia mensagem de aguarde entrevista")
+    .addChannelOption((opt) =>
+      opt
+        .setName("canal")
+        .setDescription("Canal onde a mensagem será enviada")
+        .setRequired(true)
+    ),
 ].map((cmd) => cmd.toJSON());
 
 // ---------------- LIMPAR COMANDOS ANTIGOS E REGISTRAR ----------------
@@ -213,11 +226,35 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.deferReply({ ephemeral: true });
     }
 
+    // ------------- /entrevista -------------
+    if (commandName === "entrevista") {
+      const canal = interaction.options.getChannel("canal");
+
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("Olá, visitantes!")
+        .setDescription(
+          "As entrevistas já estão disponíveis. Para participar, basta clicar no botão abaixo e um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte! ✨"
+        );
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setLabel("Aguarde Entrevista")
+          .setStyle(ButtonStyle.Link) // botão cinza/link
+          .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
+      );
+
+      await canal.send({ embeds: [embed], components: [row] });
+      await canal.send({ content: `<@&1136131478888124526>` });
+
+      return interaction.editReply({ content: "✅ Mensagem de entrevista enviada com sucesso!" });
+    }
+
     // ------------- /aviso -------------
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
       const descricaoRaw = interaction.options.getString("descricao");
-      const descricao = descricaoRaw.replace(/\\n/g, "\n"); // 🔹 converte \n em quebra real
+      const descricao = descricaoRaw.replace(/\\n/g, "\n");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
       const embed = new EmbedBuilder()
@@ -272,7 +309,7 @@ client.on("interactionCreate", async (interaction) => {
 
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
-        .setTitle("📰 ATUALIZAÇÕES")
+        .setTitle("ATUALIZAÇÕES") // removido emoji
         .setDescription(textos.join("\n\n"));
       if (imagem) embed.setImage(imagem);
 
