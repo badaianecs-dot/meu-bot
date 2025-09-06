@@ -21,7 +21,6 @@ const client = new Client({
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.MessageContent,
   ],
-  partials: ["MESSAGE", "CHANNEL", "REACTION"],
 });
 
 // ---------------- CONFIGURAÇÕES ----------------
@@ -56,12 +55,6 @@ const commands = [
       opt
         .setName("imagem")
         .setDescription("Imagem opcional")
-        .setRequired(false),
-    )
-    .addChannelOption((opt) =>
-      opt
-        .setName("canal")
-        .setDescription("Canal para linkar (opcional)")
         .setRequired(false),
     ),
 
@@ -223,13 +216,12 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.deferReply({ ephemeral: true });
     }
 
-    // ------------- /aviso -------------
+    // ------------- /aviso atualizado -------------
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
       const descricaoRaw = interaction.options.getString("descricao");
       const descricao = descricaoRaw.replace(/\\n/g, "\n");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
-      const canal = interaction.options.getChannel("canal");
 
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
@@ -238,15 +230,24 @@ client.on("interactionCreate", async (interaction) => {
       if (imagem) embed.setImage(imagem);
 
       const components = [];
-      if (canal) {
-        const row = new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setLabel("Abrir Ticket") // ⚡ botão fixo
-            .setStyle(ButtonStyle.Link)
-            .setURL(`https://discord.com/channels/${interaction.guild.id}/${canal.id}`)
-        );
-        components.push(row);
-      }
+
+      // Botão fixo para canal1
+      const row1 = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setLabel("Abrir Ticket")
+          .setStyle(ButtonStyle.Link)
+          .setURL("https://discord.com/channels/1120401688713502772/1136126482629005353")
+      );
+      components.push(row1);
+
+      // Botão fixo para canal2
+      const row2 = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setLabel("Aguarde entrevista")
+          .setStyle(ButtonStyle.Link)
+          .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
+      );
+      components.push(row2);
 
       await interaction.channel.send({ embeds: [embed], components });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
