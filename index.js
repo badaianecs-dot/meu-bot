@@ -5,6 +5,9 @@ const {
   SlashCommandBuilder,
   REST,
   Routes,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } = require("discord.js");
 require("dotenv").config();
 const express = require("express");
@@ -18,6 +21,7 @@ const client = new Client({
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.MessageContent,
   ],
+  partials: ["MESSAGE", "CHANNEL", "REACTION"],
 });
 
 // ---------------- CONFIGURAÇÕES ----------------
@@ -52,6 +56,12 @@ const commands = [
       opt
         .setName("imagem")
         .setDescription("Imagem opcional")
+        .setRequired(false),
+    )
+    .addChannelOption((opt) =>
+      opt
+        .setName("canal")
+        .setDescription("Canal para linkar (opcional)")
         .setRequired(false),
     ),
 
@@ -217,8 +227,9 @@ client.on("interactionCreate", async (interaction) => {
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
       const descricaoRaw = interaction.options.getString("descricao");
-      const descricao = descricaoRaw.replace(/\\n/g, "\n"); // 🔹 converte \n em quebra real
+      const descricao = descricaoRaw.replace(/\\n/g, "\n");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
+      const canal = interaction.options.getChannel("canal");
 
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
@@ -226,7 +237,18 @@ client.on("interactionCreate", async (interaction) => {
         .setDescription(descricao);
       if (imagem) embed.setImage(imagem);
 
-      await interaction.channel.send({ embeds: [embed] });
+      const components = [];
+      if (canal) {
+        const row = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setLabel(`📌 Ir para #${canal.name}`)
+            .setStyle(ButtonStyle.Link)
+            .setURL(`https://discord.com/channels/${interaction.guild.id}/${canal.id}`)
+        );
+        components.push(row);
+      }
+
+      await interaction.channel.send({ embeds: [embed], components });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
 
       return interaction.editReply({ content: "✅ Aviso enviado!" });
