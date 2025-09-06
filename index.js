@@ -85,8 +85,8 @@ const commands = [
     .addStringOption((opt) =>
       opt
         .setName("premiacao")
-        .setDescription("Premiação do evento")
-        .setRequired(true),
+        .setDescription("Premiação do evento (opcional)")
+        .setRequired(false),
     )
     .addStringOption((opt) =>
       opt
@@ -239,11 +239,12 @@ client.on("interactionCreate", async (interaction) => {
       const data = interaction.options.getString("data");
       const horario = interaction.options.getString("horario");
       const local = interaction.options.getString("local");
-      const premiacao = interaction.options.getString("premiacao");
+      const premiacao = interaction.options.getString("premiacao"); // agora opcional
       const observacao = interaction.options.getString("observacao");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
-      let descEmbed = `**Descrição:** ${descricao}\n\n**Data:** ${data}\n\n**Horário:** ${horario}\n\n**Local:** ${local}\n\n**Premiação:** ${premiacao}`;
+      let descEmbed = `**Descrição:** ${descricao}\n\n**Data:** ${data}\n\n**Horário:** ${horario}\n\n**Local:** ${local}`;
+      if (premiacao) descEmbed += `\n\n**Premiação:** ${premiacao}`;
       if (observacao) descEmbed += `\n\n**Observação:** ${observacao}`;
 
       const embed = new EmbedBuilder()
