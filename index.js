@@ -59,11 +59,11 @@ const commands = [
     )
     .addChannelOption(opt =>
       opt.setName("canal1")
-         .setDescription("Canal para Abrir Ticket (opcional)")
+         .setDescription("Escolha o canal para Abrir Ticket (opcional)")
          .setRequired(false))
     .addChannelOption(opt =>
       opt.setName("canal2")
-         .setDescription("Canal para Aguarde entrevista (opcional)")
+         .setDescription("Escolha o canal para Aguarde entrevista (opcional)")
          .setRequired(false)),
 
   new SlashCommandBuilder()
@@ -224,7 +224,7 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.deferReply({ ephemeral: true });
     }
 
-    // ------------- /aviso atualizado com botões opcionais -------------
+    // ------------- /aviso antigo com canal opcional -------------
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
       const descricaoRaw = interaction.options.getString("descricao");
@@ -242,7 +242,6 @@ client.on("interactionCreate", async (interaction) => {
 
       const components = [];
 
-      // Botão opcional para canal1
       if (canal1) {
         const row1 = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
@@ -253,7 +252,6 @@ client.on("interactionCreate", async (interaction) => {
         components.push(row1);
       }
 
-      // Botão opcional para canal2
       if (canal2) {
         const row2 = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
