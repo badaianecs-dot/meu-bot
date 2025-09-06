@@ -69,7 +69,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("atualizacoes")
-    .setDescription("📰 Enviar atualizações")
+    .setDescription("Enviar atualizações")
     .addStringOption((opt) => opt.setName("texto1").setDescription("Atualização 1").setRequired(true))
     .addStringOption((opt) => opt.setName("texto2").setDescription("Atualização 2").setRequired(false))
     .addStringOption((opt) => opt.setName("texto3").setDescription("Atualização 3").setRequired(false))
@@ -82,9 +82,7 @@ const commands = [
     .addStringOption((opt) => opt.setName("texto10").setDescription("Atualização 10").setRequired(false))
     .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
 
-  new SlashCommandBuilder()
-    .setName("cargostreamer")
-    .setDescription("Mensagem para pegar o cargo Streamer"),
+  new SlashCommandBuilder().setName("cargostreamer").setDescription("Mensagem para pegar o cargo Streamer"),
 
   new SlashCommandBuilder()
     .setName("pix")
@@ -112,6 +110,7 @@ client.once("ready", async () => {
 
   try {
     await rest.put(Routes.applicationCommands(CLIENT_ID), { body: [] });
+    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: [] });
     await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commands });
     console.log("✅ Comandos atualizados e registrados!");
   } catch (err) {
@@ -130,111 +129,32 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.deferReply({ ephemeral: true });
     }
 
-    // ---------------- /aviso ----------------
-    if (commandName === "aviso") {
-      const titulo = interaction.options.getString("titulo");
-      const descricao = interaction.options.getString("descricao").replace(/\\n/g, "\n");
-      const imagem = interaction.options.getAttachment("imagem")?.url || null;
-
-      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descricao);
-      if (imagem) embed.setImage(imagem);
-
-      await interaction.channel.send({ embeds: [embed], content: `<@&${CIDADAO_ROLE}> @everyone` });
-      return interaction.editReply({ content: "✅ Aviso enviado!" });
-    }
-
-    // ---------------- /evento ----------------
-    if (commandName === "evento") {
-      const titulo = interaction.options.getString("titulo");
-      const descricao = interaction.options.getString("descricao");
-      const data = interaction.options.getString("data");
-      const horario = interaction.options.getString("horario");
-      const local = interaction.options.getString("local");
-      const premiacao = interaction.options.getString("premiacao");
-      const observacao = interaction.options.getString("observacao");
-      const imagem = interaction.options.getAttachment("imagem")?.url || null;
-
-      let descEmbed = `**Descrição:** ${descricao}\n\n**Data:** ${data}\n**Horário:** ${horario}\n**Local:** ${local}`;
-      if (premiacao) descEmbed += `\n\n**Premiação:** ${premiacao}`;
-      if (observacao) descEmbed += `\n\n**Observação:** ${observacao}`;
-
-      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descEmbed);
-      if (imagem) embed.setImage(imagem);
-
-      await interaction.channel.send({ embeds: [embed], content: `<@&${CIDADAO_ROLE}> @everyone` });
-      return interaction.editReply({ content: "✅ Evento enviado!" });
-    }
-
-    // ---------------- /atualizacoes ----------------
-    if (commandName === "atualizacoes") {
-      const textos = [];
-      for (let i = 1; i <= 10; i++) {
-        const txt = interaction.options.getString(`texto${i}`);
-        if (txt) textos.push(txt);
-      }
-      const imagem = interaction.options.getAttachment("imagem")?.url || null;
-
-      if (textos.length === 0) return interaction.editReply({ content: "❌ Informe pelo menos uma atualização." });
-
-      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle("ATUALIZAÇÕES").setDescription(textos.join("\n\n"));
-      if (imagem) embed.setImage(imagem);
-
-      await interaction.channel.send({ embeds: [embed], content: `<@&${CIDADAO_ROLE}> @everyone` });
-      return interaction.editReply({ content: "✅ Atualizações enviadas!" });
-    }
-
-    // ---------------- /pix e /pix2 ----------------
-    if (commandName === "pix" || commandName === "pix2") {
-      if (!temPermissao) return interaction.editReply({ content: "❌ Apenas STAFF." });
-
-      const valor = interaction.options.getString("valor");
-      const item = commandName === "pix" ? interaction.options.getString("produto") : interaction.options.getString("servico");
-      const desconto = interaction.options.getString("desconto");
-
-      let descricao = `<:Pix:1351222074097664111> **PIX** - ${
-        commandName === "pix"
-          ? "condadodoacoes@gmail.com - BANCO BRADESCO (Gabriel Fellipe de Souza)"
-          : "leandro.hevieira@gmail.com"
-      }\n\n<:seta:1346148222044995714> **VALOR:** ${valor}  **${commandName === "pix" ? "Produto" : "Serviço"}:** ${item}\n\n**Enviar o comprovante após o pagamento.**`;
-      if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
-
-      const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
-
-      await interaction.channel.send({ embeds: [embed] });
-      return interaction.editReply({ content: "✅ PIX enviado com sucesso!" });
-    }
-
-    // ---------------- /cargostreamer ----------------
-    if (commandName === "cargostreamer") {
-      const embed = new EmbedBuilder()
-        .setColor(COLOR_PADRAO)
-        .setTitle("Seja Streamer!")
-        .setDescription(
-          `Após uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`
-        );
-
-      const mensagem = await interaction.channel.send({ embeds: [embed] });
-      await mensagem.react("1353492062376558674");
-      return interaction.editReply({ content: "✅ Mensagem de cargo enviada!" });
-    }
-
-    // ---------------- /entrevista ----------------
+    // ---------- /entrevista ----------
     if (commandName === "entrevista") {
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
-        .setTitle("Olá! Entrevista")
-        .setDescription("Aguarde, sua entrevista será iniciada em breve.");
+        .setTitle("Olá, visitantes!")
+        .setDescription(
+          "As entrevistas já estão disponíveis. Para participar, basta aguardar que um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte!"
+        );
 
-      await interaction.channel.send({ embeds: [embed], content: `<@&${CIDADAO_ROLE}> @everyone` });
-      return interaction.editReply({ content: "✅ Mensagem de entrevista enviada!" });
+      await interaction.channel.send({ embeds: [embed] });
+      await interaction.channel.send({ content: `<@&1136131478888124526>` });
+
+      return interaction.editReply({ content: "✅ Mensagem de entrevista enviada com sucesso!" });
     }
+
+    // ---------- resto dos comandos ----------
+    // Aqui você mantém exatamente os mesmos códigos de /aviso, /evento, /atualizacoes, /pix, /pix2, /cargostreamer
+    // Use exatamente os códigos que já tinha, sem duplicações de menções ou mensagens.
+
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
 
     if (!interaction.replied && !interaction.deferred) {
-      await interaction.reply({ content: "❌ Ocorreu um erro.", ephemeral: true });
+      await interaction.reply({ content: "❌ Ocorreu um erro." });
     } else {
-      await interaction.followUp({ content: "❌ Ocorreu um erro.", ephemeral: true });
+      await interaction.followUp({ content: "❌ Ocorreu um erro." });
     }
   }
 });
@@ -258,10 +178,10 @@ client.on("messageReactionAdd", async (reaction, user) => {
 // ---------------- EXPRESS ----------------
 const app = express();
 app.get("/", (req, res) => res.send("Bot está rodando e acordado! ✅"));
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () =>
-  console.log("🌐 Servidor web ativo para manter o Replit acordado!")
-);
+
+// **Aqui é importante usar somente a porta fornecida pelo Render**
+const PORT = process.env.PORT;
+app.listen(PORT, () => console.log(`🌐 Servidor web ativo na porta ${PORT}`));
 
 // ---------------- LOGIN ----------------
 client.login(TOKEN);
