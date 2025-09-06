@@ -241,7 +241,7 @@ client.on("interactionCreate", async (interaction) => {
       if (canal) {
         const row = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
-            .setLabel(`📌 Ir para #${canal.name}`)
+            .setLabel("Abrir Ticket") // ⚡ botão fixo
             .setStyle(ButtonStyle.Link)
             .setURL(`https://discord.com/channels/${interaction.guild.id}/${canal.id}`)
         );
