@@ -185,13 +185,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("entrevista")
-    .setDescription("📌 Envia mensagem de aguarde entrevista")
-    .addChannelOption((opt) =>
-      opt
-        .setName("canal")
-        .setDescription("Canal onde a mensagem será enviada")
-        .setRequired(true)
-    ),
+    .setDescription("📌 Envia mensagem de aguarde entrevista"),
 ].map((cmd) => cmd.toJSON());
 
 // ---------------- LIMPAR COMANDOS ANTIGOS E REGISTRAR ----------------
@@ -226,31 +220,7 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.deferReply({ ephemeral: true });
     }
 
-    // ------------- /entrevista -------------
-    if (commandName === "entrevista") {
-      const canal = interaction.options.getChannel("canal");
-
-      const embed = new EmbedBuilder()
-        .setColor(COLOR_PADRAO)
-        .setTitle("Olá, visitantes!")
-        .setDescription(
-          "As entrevistas já estão disponíveis. Para participar, basta clicar no botão abaixo e um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte! ✨"
-        );
-
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setLabel("Aguarde Entrevista")
-          .setStyle(ButtonStyle.Link) // botão cinza/link
-          .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
-      );
-
-      await canal.send({ embeds: [embed], components: [row] });
-      await canal.send({ content: `<@&1136131478888124526>` });
-
-      return interaction.editReply({ content: "✅ Mensagem de entrevista enviada com sucesso!" });
-    }
-
-    // ------------- /aviso -------------
+    // ---------------- /aviso ----------------
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
       const descricaoRaw = interaction.options.getString("descricao");
@@ -269,7 +239,7 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.editReply({ content: "✅ Aviso enviado!" });
     }
 
-    // ------------- /evento -------------
+    // ---------------- /evento ----------------
     if (commandName === "evento") {
       const titulo = interaction.options.getString("titulo");
       const descricao = interaction.options.getString("descricao");
@@ -295,7 +265,7 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.editReply({ content: "✅ Evento enviado!" });
     }
 
-    // ------------- /atualizacoes -------------
+    // ---------------- /atualizacoes ----------------
     if (commandName === "atualizacoes") {
       const textos = [];
       for (let i = 1; i <= 10; i++) {
@@ -309,7 +279,7 @@ client.on("interactionCreate", async (interaction) => {
 
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
-        .setTitle("ATUALIZAÇÕES") // removido emoji
+        .setTitle("ATUALIZAÇÕES")
         .setDescription(textos.join("\n\n"));
       if (imagem) embed.setImage(imagem);
 
@@ -319,7 +289,7 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.editReply({ content: "✅ Atualizações enviadas!" });
     }
 
-    // ------------- /pix e /pix2 -------------
+    // ---------------- /pix e /pix2 ----------------
     if (commandName === "pix" || commandName === "pix2") {
       if (!temPermissao)
         return interaction.editReply({ content: "❌ Apenas STAFF." });
@@ -350,7 +320,7 @@ client.on("interactionCreate", async (interaction) => {
       return interaction.editReply({ content: "✅ PIX enviado com sucesso!" });
     }
 
-    // ------------- /cargostreamer -------------
+    // ---------------- /cargostreamer ----------------
     if (commandName === "cargostreamer") {
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
@@ -363,6 +333,30 @@ client.on("interactionCreate", async (interaction) => {
       await mensagem.react("1353492062376558674");
 
       return interaction.editReply({ content: "✅ Mensagem de cargo enviada!" });
+    }
+
+    // ---------------- /entrevista ----------------
+    if (commandName === "entrevista") {
+      const canal = interaction.channel; // envia no canal atual
+
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("Olá, visitantes!")
+        .setDescription(
+          "As entrevistas já estão disponíveis. Para participar, basta clicar no botão \"Aguarde Entrevista\" e um membro da equipe irá atendê-lo em breve.\n\n" +
+          "Desejamos boa sorte!"
+        );
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setLabel("Aguarde Entrevista")
+          .setStyle(ButtonStyle.Link)
+          .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
+      );
+
+      await canal.send({ embeds: [embed], components: [row], content: `<@&1136131478888124526>` });
+
+      return interaction.editReply({ content: "✅ Mensagem de entrevista enviada com sucesso!" });
     }
 
   } catch (err) {
