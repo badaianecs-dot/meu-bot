@@ -39,47 +39,92 @@ const CIDADAO_ROLE = "1136132647115030608";
 
 // ---------------- COMANDOS ----------------
 const commands = [
+  // /aviso
   new SlashCommandBuilder()
     .setName("aviso")
     .setDescription("📣 Enviar um aviso")
     .addStringOption((opt) =>
-      opt.setName("titulo").setDescription("Título do aviso").setRequired(true),
+      opt.setName("titulo").setDescription("Título do aviso").setRequired(true)
     )
     .addStringOption((opt) =>
       opt
         .setName("descricao")
         .setDescription("Descrição do aviso (use \\n para quebrar linha)")
-        .setRequired(true),
+        .setRequired(true)
     )
     .addAttachmentOption((opt) =>
       opt
         .setName("imagem")
         .setDescription("Imagem opcional")
-        .setRequired(false),
+        .setRequired(false)
     )
-    .addChannelOption(opt =>
-      opt.setName("canal1")
-         .setDescription("Escolha o canal para Abrir Ticket (opcional)")
-         .setRequired(false))
-    .addChannelOption(opt =>
-      opt.setName("canal2")
-         .setDescription("Escolha o canal para Aguarde entrevista (opcional)")
-         .setRequired(false))
-    .addRoleOption(opt =>
-      opt.setName("mencao1")
-         .setDescription("Escolha uma role para mencionar (opcional)")
-         .setRequired(false))
-    .addRoleOption(opt =>
-      opt.setName("mencao2")
-         .setDescription("Escolha outra role para mencionar (opcional)")
-         .setRequired(false)),
+    .addChannelOption((opt) =>
+      opt
+        .setName("canal1")
+        .setDescription("Escolha o canal para Abrir Ticket (opcional)")
+        .setRequired(false)
+    )
+    .addChannelOption((opt) =>
+      opt
+        .setName("canal2")
+        .setDescription("Escolha o canal para Aguarde entrevista (opcional)")
+        .setRequired(false)
+    )
+    .addRoleOption((opt) =>
+      opt
+        .setName("mencao1")
+        .setDescription("Escolha uma role para mencionar (opcional)")
+        .setRequired(false)
+    )
+    .addRoleOption((opt) =>
+      opt
+        .setName("mencao2")
+        .setDescription("Escolha outra role para mencionar (opcional)")
+        .setRequired(false)
+    )
+    .toJSON(),
 
-  // ... outros comandos que você já tem
+  // /evento (exemplo, mantenha exatamente como seu original)
+  new SlashCommandBuilder()
+    .setName("evento")
+    .setDescription("🗓️ Enviar um evento")
+    // ... opções originais do seu /evento
+    .toJSON(),
 
+  // /atualizacoes
+  new SlashCommandBuilder()
+    .setName("atualizacoes")
+    .setDescription("🔔 Enviar atualizações")
+    // ... opções originais do seu /atualizacoes
+    .toJSON(),
+
+  // /pix
+  new SlashCommandBuilder()
+    .setName("pix")
+    .setDescription("💰 Enviar PIX")
+    // ... opções originais do seu /pix
+    .toJSON(),
+
+  // /pix2
+  new SlashCommandBuilder()
+    .setName("pix2")
+    .setDescription("💳 Enviar PIX alternativo")
+    // ... opções originais do seu /pix2
+    .toJSON(),
+
+  // /cargostreamer
+  new SlashCommandBuilder()
+    .setName("cargostreamer")
+    .setDescription("🎮 Gerenciar cargo streamer")
+    // ... opções originais do seu /cargostreamer
+    .toJSON(),
+
+  // /entrevista atualizado
   new SlashCommandBuilder()
     .setName("entrevista")
-    .setDescription("📌 Envia mensagem de aguarde entrevista"),
-].map((cmd) => cmd.toJSON());
+    .setDescription("📌 Envia mensagem de aguarde entrevista")
+    .toJSON(),
+];
 
 // ---------------- LIMPAR COMANDOS ANTIGOS E REGISTRAR ----------------
 client.once("ready", async () => {
@@ -106,7 +151,7 @@ client.on("interactionCreate", async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
     const commandName = interaction.commandName;
     const temPermissao = STAFF_ROLES.some((r) =>
-      interaction.member.roles.cache.has(r),
+      interaction.member.roles.cache.has(r)
     );
 
     if (!interaction.deferred && !interaction.replied) {
@@ -115,9 +160,8 @@ client.on("interactionCreate", async (interaction) => {
 
     // ---------------- /entrevista ----------------
     if (commandName === "entrevista") {
-      const canal = interaction.channel; // canal onde o comando foi usado
+      const canal = interaction.channel;
 
-      // Embed com título e descrição
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
         .setTitle("Olá, visitantes! 👋")
@@ -126,25 +170,22 @@ client.on("interactionCreate", async (interaction) => {
           "Desejamos boa sorte! ✨"
         );
 
-      // Botão link para o canal de entrevista específico
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setLabel("Aguarde Entrevista")
-          .setStyle(ButtonStyle.Success) // botão verde
+          .setStyle(ButtonStyle.Success)
           .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
       );
 
-      // Envia o embed com botão
       await canal.send({ embeds: [embed], components: [row] });
-
-      // Mensagem com menção de role
       await canal.send({ content: `<@&1136131478888124526>` });
 
       return interaction.editReply({ content: "✅ Mensagem de entrevista enviada com sucesso!" });
     }
 
     // ---------------- outros comandos existentes ----------------
-    // Seu código existente de /aviso, /evento, /atualizacoes, /pix, /pix2, /cargostreamer continua igual
+    // Aqui entram os handlers do /aviso, /evento, /atualizacoes, /pix, /pix2, /cargostreamer
+    // Mantenha exatamente como estavam no seu código original
 
   } catch (err) {
     console.error("Erro em interactionCreate:", err);
@@ -178,7 +219,7 @@ const app = express();
 app.get("/", (req, res) => res.send("Bot está rodando e acordado! ✅"));
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () =>
-  console.log("🌐 Servidor web ativo para manter o Replit acordado!"),
+  console.log("🌐 Servidor web ativo para manter o Replit acordado!")
 );
 
 // ---------------- LOGIN ----------------
