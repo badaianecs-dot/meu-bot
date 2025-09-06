@@ -45,7 +45,7 @@ const commands = [
     .addStringOption((opt) =>
       opt
         .setName("descricao")
-        .setDescription("Descrição do aviso")
+        .setDescription("Descrição do aviso (use \\n para quebrar linha)")
         .setRequired(true),
     )
     .addAttachmentOption((opt) =>
@@ -209,7 +209,6 @@ client.on("interactionCreate", async (interaction) => {
       interaction.member.roles.cache.has(r),
     );
 
-    // Marca interação como respondida
     if (!interaction.deferred && !interaction.replied) {
       await interaction.deferReply({ ephemeral: true });
     }
@@ -217,7 +216,8 @@ client.on("interactionCreate", async (interaction) => {
     // ------------- /aviso -------------
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
-      const descricao = interaction.options.getString("descricao");
+      const descricaoRaw = interaction.options.getString("descricao");
+      const descricao = descricaoRaw.replace(/\\n/g, "\n"); // 🔹 converte \n em quebra real
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
       const embed = new EmbedBuilder()
@@ -239,7 +239,7 @@ client.on("interactionCreate", async (interaction) => {
       const data = interaction.options.getString("data");
       const horario = interaction.options.getString("horario");
       const local = interaction.options.getString("local");
-      const premiacao = interaction.options.getString("premiacao"); // opcional
+      const premiacao = interaction.options.getString("premiacao");
       const observacao = interaction.options.getString("observacao");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
@@ -255,7 +255,6 @@ client.on("interactionCreate", async (interaction) => {
 
       await interaction.channel.send({ embeds: [embed] });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
-
       return interaction.editReply({ content: "✅ Evento enviado!" });
     }
 
