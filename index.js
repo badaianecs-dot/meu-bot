@@ -46,45 +46,23 @@ const commands = [
       opt.setName("titulo").setDescription("Título do aviso").setRequired(true),
     )
     .addStringOption((opt) =>
-      opt
-        .setName("descricao")
-        .setDescription("Descrição do aviso (use \\n para quebrar linha)")
-        .setRequired(true),
+      opt.setName("descricao").setDescription("Descrição do aviso (use \\n para quebrar linha)").setRequired(true),
     )
     .addAttachmentOption((opt) =>
-      opt
-        .setName("imagem")
-        .setDescription("Imagem opcional")
-        .setRequired(false),
+      opt.setName("imagem").setDescription("Imagem opcional").setRequired(false),
     ),
 
   new SlashCommandBuilder()
     .setName("evento")
     .setDescription("📅 Criar um evento")
-    .addStringOption((opt) =>
-      opt.setName("titulo").setDescription("Título do evento").setRequired(true),
-    )
-    .addStringOption((opt) =>
-      opt.setName("descricao").setDescription("Descrição do evento").setRequired(true),
-    )
-    .addStringOption((opt) =>
-      opt.setName("data").setDescription("Data do evento").setRequired(true),
-    )
-    .addStringOption((opt) =>
-      opt.setName("horario").setDescription("Horário do evento").setRequired(true),
-    )
-    .addStringOption((opt) =>
-      opt.setName("local").setDescription("Local do evento").setRequired(true),
-    )
-    .addStringOption((opt) =>
-      opt.setName("premiacao").setDescription("Premiação do evento (opcional)").setRequired(false),
-    )
-    .addStringOption((opt) =>
-      opt.setName("observacao").setDescription("Observação (opcional)").setRequired(false),
-    )
-    .addAttachmentOption((opt) =>
-      opt.setName("imagem").setDescription("Imagem opcional").setRequired(false),
-    ),
+    .addStringOption((opt) => opt.setName("titulo").setDescription("Título do evento").setRequired(true))
+    .addStringOption((opt) => opt.setName("descricao").setDescription("Descrição do evento").setRequired(true))
+    .addStringOption((opt) => opt.setName("data").setDescription("Data do evento").setRequired(true))
+    .addStringOption((opt) => opt.setName("horario").setDescription("Horário do evento").setRequired(true))
+    .addStringOption((opt) => opt.setName("local").setDescription("Local do evento").setRequired(true))
+    .addStringOption((opt) => opt.setName("premiacao").setDescription("Premiação do evento (opcional)").setRequired(false))
+    .addStringOption((opt) => opt.setName("observacao").setDescription("Observação (opcional)").setRequired(false))
+    .addAttachmentOption((opt) => opt.setName("imagem").setDescription("Imagem opcional").setRequired(false)),
 
   new SlashCommandBuilder()
     .setName("atualizacoes")
@@ -117,7 +95,9 @@ const commands = [
     .addStringOption((opt) => opt.setName("servico").setDescription("Serviço").setRequired(true))
     .addStringOption((opt) => opt.setName("desconto").setDescription("Desconto (%) opcional").setRequired(false)),
 
-  new SlashCommandBuilder().setName("entrevista").setDescription("📌 Envia mensagem de aguarde entrevista"),
+  new SlashCommandBuilder()
+    .setName("entrevista")
+    .setDescription("📌 Envia mensagem de aguarde entrevista"),
 ].map((cmd) => cmd.toJSON());
 
 // ---------------- REGISTRO DE COMANDOS ----------------
@@ -149,8 +129,7 @@ client.on("interactionCreate", async (interaction) => {
     // ---------------- /aviso ----------------
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
-      const descricaoRaw = interaction.options.getString("descricao");
-      const descricao = descricaoRaw.replace(/\\n/g, "\n");
+      const descricao = interaction.options.getString("descricao").replace(/\\n/g, "\n");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
 
       const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle(titulo).setDescription(descricao);
@@ -219,15 +198,17 @@ client.on("interactionCreate", async (interaction) => {
       if (desconto) descricao += `\n*Desconto aplicado: ${desconto}%*`;
 
       const embed = new EmbedBuilder().setColor("#00FF00").setDescription(descricao);
+
       await interaction.channel.send({ embeds: [embed] });
       return interaction.editReply({ content: "✅ PIX enviado com sucesso!" });
     }
 
     // ---------------- /cargostreamer ----------------
     if (commandName === "cargostreamer") {
-      const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle("Seja Streamer!").setDescription(
-        `Após uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`
-      );
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("Seja Streamer!")
+        .setDescription(`Após uma semana, cumprindo os requisitos, você receberá os benefícios na cidade.\n\nReaja com <:Streamer:1353492062376558674> para receber o cargo Streamer!`);
 
       const mensagem = await interaction.channel.send({ embeds: [embed] });
       await mensagem.react("1353492062376558674");
@@ -236,27 +217,23 @@ client.on("interactionCreate", async (interaction) => {
 
     // ---------------- /entrevista ----------------
     if (commandName === "entrevista") {
-      const canal = interaction.channel;
-
-      try {
-        const embed = new EmbedBuilder().setColor(COLOR_PADRAO).setTitle("Olá, visitantes! 👋").setDescription(
+      const embed = new EmbedBuilder()
+        .setColor(COLOR_PADRAO)
+        .setTitle("Olá, visitantes! 👋")
+        .setDescription(
           "As entrevistas já estão disponíveis. Para participar, basta clicar no botão \"Aguarde Entrevista\" e um membro da equipe irá atendê-lo em breve.\n\nDesejamos boa sorte! ✨"
         );
 
-        const row = new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setLabel("Aguarde Entrevista")
-            .setStyle(ButtonStyle.Link)
-            .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
-        );
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setLabel("Aguarde Entrevista")
+          .setStyle(ButtonStyle.Link)
+          .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
+      );
 
-        await canal.send({ embeds: [embed], components: [row] });
-        await canal.send({ content: `<@&1136131478888124526>` });
-        return interaction.editReply({ content: "✅ Mensagem de entrevista enviada com sucesso!" });
-      } catch (err) {
-        console.error("Erro ao enviar /entrevista:", err);
-        return interaction.editReply({ content: "❌ Não foi possível enviar a mensagem de entrevista. Verifique permissões do canal." });
-      }
+      await interaction.channel.send({ embeds: [embed], components: [row] });
+      await interaction.channel.send({ content: `<@&1136131478888124526>` });
+      return interaction.editReply({ content: "✅ Mensagem de entrevista enviada com sucesso!" });
     }
 
   } catch (err) {
