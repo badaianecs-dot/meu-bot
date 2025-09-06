@@ -56,7 +56,15 @@ const commands = [
         .setName("imagem")
         .setDescription("Imagem opcional")
         .setRequired(false),
-    ),
+    )
+    .addChannelOption(opt =>
+      opt.setName("canal1")
+         .setDescription("Canal para Abrir Ticket (opcional)")
+         .setRequired(false))
+    .addChannelOption(opt =>
+      opt.setName("canal2")
+         .setDescription("Canal para Aguarde entrevista (opcional)")
+         .setRequired(false)),
 
   new SlashCommandBuilder()
     .setName("evento")
@@ -216,12 +224,15 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.deferReply({ ephemeral: true });
     }
 
-    // ------------- /aviso atualizado -------------
+    // ------------- /aviso atualizado com botões opcionais -------------
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
       const descricaoRaw = interaction.options.getString("descricao");
       const descricao = descricaoRaw.replace(/\\n/g, "\n");
       const imagem = interaction.options.getAttachment("imagem")?.url || null;
+
+      const canal1 = interaction.options.getChannel("canal1");
+      const canal2 = interaction.options.getChannel("canal2");
 
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
@@ -231,23 +242,27 @@ client.on("interactionCreate", async (interaction) => {
 
       const components = [];
 
-      // Botão fixo para canal1
-      const row1 = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setLabel("Abrir Ticket")
-          .setStyle(ButtonStyle.Link)
-          .setURL("https://discord.com/channels/1120401688713502772/1136126482629005353")
-      );
-      components.push(row1);
+      // Botão opcional para canal1
+      if (canal1) {
+        const row1 = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setLabel("Abrir Ticket")
+            .setStyle(ButtonStyle.Link)
+            .setURL(`https://discord.com/channels/${interaction.guild.id}/${canal1.id}`)
+        );
+        components.push(row1);
+      }
 
-      // Botão fixo para canal2
-      const row2 = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setLabel("Aguarde entrevista")
-          .setStyle(ButtonStyle.Link)
-          .setURL("https://discord.com/channels/1120401688713502772/1179115356854439966")
-      );
-      components.push(row2);
+      // Botão opcional para canal2
+      if (canal2) {
+        const row2 = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setLabel("Aguarde entrevista")
+            .setStyle(ButtonStyle.Link)
+            .setURL(`https://discord.com/channels/${interaction.guild.id}/${canal2.id}`)
+        );
+        components.push(row2);
+      }
 
       await interaction.channel.send({ embeds: [embed], components });
       await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
