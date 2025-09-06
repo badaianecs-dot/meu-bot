@@ -64,6 +64,10 @@ const commands = [
     .addChannelOption(opt =>
       opt.setName("canal2")
          .setDescription("Escolha o canal para Aguarde entrevista (opcional)")
+         .setRequired(false))
+    .addBooleanOption(opt =>
+      opt.setName("mencao")
+         .setDescription("Deseja mencionar os cidadãos e o everyone?")
          .setRequired(false)),
 
   new SlashCommandBuilder()
@@ -224,7 +228,7 @@ client.on("interactionCreate", async (interaction) => {
       await interaction.deferReply({ ephemeral: true });
     }
 
-    // ------------- /aviso antigo com canal opcional -------------
+    // ------------- /aviso atualizado com menção opcional -------------
     if (commandName === "aviso") {
       const titulo = interaction.options.getString("titulo");
       const descricaoRaw = interaction.options.getString("descricao");
@@ -233,6 +237,7 @@ client.on("interactionCreate", async (interaction) => {
 
       const canal1 = interaction.options.getChannel("canal1");
       const canal2 = interaction.options.getChannel("canal2");
+      const mencao = interaction.options.getBoolean("mencao") || false;
 
       const embed = new EmbedBuilder()
         .setColor(COLOR_PADRAO)
@@ -255,7 +260,7 @@ client.on("interactionCreate", async (interaction) => {
       if (canal2) {
         const row2 = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
-            .setLabel("Aguarde entrevista")
+            .setLabel("Aguarde Entrevista")
             .setStyle(ButtonStyle.Link)
             .setURL(`https://discord.com/channels/${interaction.guild.id}/${canal2.id}`)
         );
@@ -263,7 +268,10 @@ client.on("interactionCreate", async (interaction) => {
       }
 
       await interaction.channel.send({ embeds: [embed], components });
-      await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+
+      if (mencao) {
+        await interaction.channel.send({ content: `<@&${CIDADAO_ROLE}> @everyone` });
+      }
 
       return interaction.editReply({ content: "✅ Aviso enviado!" });
     }
