@@ -78,11 +78,7 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("entrevista")
-    .setDescription("📌 Envia mensagem de aguarde entrevista")
-    .addChannelOption(opt =>
-      opt.setName("canal")
-         .setDescription("Canal onde a mensagem será enviada")
-         .setRequired(true)),
+    .setDescription("📌 Envia mensagem de aguarde entrevista"),
 ].map((cmd) => cmd.toJSON());
 
 // ---------------- LIMPAR COMANDOS ANTIGOS E REGISTRAR ----------------
@@ -119,7 +115,7 @@ client.on("interactionCreate", async (interaction) => {
 
     // ---------------- /entrevista ----------------
     if (commandName === "entrevista") {
-      const canal = interaction.options.getChannel("canal");
+      const canal = interaction.channel; // canal onde o comando foi usado
 
       // Embed com título e descrição
       const embed = new EmbedBuilder()
